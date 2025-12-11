@@ -76,49 +76,20 @@ root_dir = PATH_OUT
 for archive_name in ARCHIVE_NAMES:
     print('\tarchive_name', archive_name)
 
-    datasets_dict = read_all_datasets()
     
     for dataset_name in utils.constants.dataset_names_for_archive[archive_name]:
+        datasets_dict = read_all_datasets(dataset_name)
 
-            i = 0
-            j = 0
-            for filters in FILTERS:
-                i = i + 1
-                filters2 = FILTERS2[i-1]
-                
-                for classifier_name in CLASSIFIERS:
-                    if classifier_name == 'teacher':
-                        j = j + 1
-                        if j >= 2 :
-                           continue
-                    print('classifier_name', classifier_name)   
-
-                    if classifier_name == 'StudentAlone':
-                        iterations = ITERATIONS_STUDENT_ALONE
-                    else:
-                        iterations = ITERATIONS
-           
-                    for iter in range(iterations):
-                        print('\t\titer', iter)                        
-                        trr = ''
-                        if iter != 0:
-                            trr = '_itr_' + str(iter)
-                    
-                        if classifier_name == 'teacher':
-                            tmp_output_directory = root_dir + '/results/'  + classifier_name + '/' + archive_name + trr + '/'  
-                            callfit (tmp_output_directory, filters, filters2)
-                        elif classifier_name == 'StudentAlone' :
-                            tmp_output_directory = root_dir + '/results/'  + '/results_f1_' + str(filters) + '_f2_' + str(filters2) + '/' + classifier_name + '/' + archive_name + trr + '/'
-                            callfit (tmp_output_directory, filters, filters2)
-                        else: #student
-                            for alpha in ALPHALIST:
-                              for temperature in TEMPERATURELIST:
-                                  if BEST_TEACHER_ONLY:
-                                    tmp_output_directory = root_dir + '/results/'  + '/results_f1_' + str(filters) + '_f2_' + str(filters2) + '/' + classifier_name + '/alpha' + str(alpha) + '/' + '/temperature' + str(temperature)+  '/' + archive_name + '_best_teacher' + trr + '/'
-                                  else:   
-                                    tmp_output_directory = root_dir + '/results/'  + '/results_f1_' + str(filters) + '_f2_' + str(filters2) + '/' + classifier_name + '/alpha' + str(alpha) + '/' + '/temperature' + str(temperature)+  '/' + archive_name + trr + '/'
-                                  callfit (tmp_output_directory, filters, filters2, alpha, temperature)
-                            if BEST_TEACHER_ONLY:
-                                break #a single teacher                         
-
-
+        for classifier_name in CLASSIFIERS:
+            if classifier_name == 'teacher':
+                iterations = ITERATIONS
+    
+            for iter in range(iterations):
+                print('\t\titer', iter)                        
+                trr = ''
+                if iter != 0:
+                    trr = '_itr_' + str(iter)
+            
+                if classifier_name == 'teacher':
+                    tmp_output_directory = root_dir + '/results/'  + classifier_name + '/' + archive_name + trr + '/'  
+                    callfit (tmp_output_directory, 128, 256)

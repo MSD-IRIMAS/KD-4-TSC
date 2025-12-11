@@ -41,7 +41,7 @@ def create_teacher(x_train, y_train, x_test, y_test, input_shape, nb_classes, ou
     # Train teacher as usual
     callbacks = [
     keras.callbacks.ModelCheckpoint(
-    f"{output_directory}/best_model_teacher.h5", save_best_only=True, monitor="loss"
+    f"{output_directory}/best_model_teacher.keras", save_best_only=True, monitor="loss"
     ),
     keras.callbacks.ReduceLROnPlateau(
     monitor="loss", factor=0.5, patience=50, min_lr=0.0001
@@ -57,7 +57,7 @@ def create_teacher(x_train, y_train, x_test, y_test, input_shape, nb_classes, ou
     batch_size = 16   
     mini_batch_size = int(min(x_train.shape[0]/10, batch_size))
     
-    history= teacher.fit(x_train, y_train,batch_size=mini_batch_size, epochs=EPOCHS,validation_data=(x_test,y_test),
+    history= teacher.fit(x_train, y_train,batch_size=mini_batch_size, epochs=EPOCHS, #validation_data=(x_test,y_test),
     callbacks=callbacks,)
     
     resultat = teacher.evaluate(x_test, y_test)
@@ -67,7 +67,7 @@ def create_teacher(x_train, y_train, x_test, y_test, input_shape, nb_classes, ou
     with open(hist_csv_file,mode='w' ) as f:
         histo_dfteacher.to_csv(f)
     loss =history.history['loss'] 
-    val_loss =history.history['val_loss']
+    # val_loss =history.history['val_loss']
 
     
     metric = "categorical_accuracy"
