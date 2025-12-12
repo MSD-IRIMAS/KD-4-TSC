@@ -3,13 +3,14 @@ UNIVARIATE_DATASET_NAMES_2018 =  ['ArrowHead', 'Wine', 'FreezerSmallTrain', 'Oli
                                  'EOGVerticalSignal', 'Ham', 'MoteStrain', 'ProximalPhalanxTW', 'WordSynonyms', 'Lightning7', 
                                  'GunPointOldVersusYoung', 'Earthquakes']
 
-CLASSIFIERS = ['teacher']
-#CLASSIFIERS = ['Student', 'StudentAlone']
+# CLASSIFIERS = ['teacher']
+CLASSIFIERS = ['Student']
+#CLASSIFIERS = ['StudentAlone']
 
 ARCHIVE_NAMES = ['UCRArchive_2018']
 
 dataset_names_for_archive = {'UCRArchive_2018': UNIVARIATE_DATASET_NAMES_2018}
-EPOCHS = 2000
+EPOCHS = 20
 
 ITERATIONS = 5  # nb of random runs for random initializations
 ITERATIONS_STUDENT_ALONE = 5 # nb of random runs for random initializations
@@ -25,8 +26,11 @@ TEMPERATURELIST = [10]
 PATH_DATA = "/home/jabdullayev/phd/datasets/UCRArchive_2018"
 PATH_OUT = "."
 
-FILTERS = [64, 32, 28, 24, 20, 16, 12, 8, 4]   
-FILTERS2 = [128, 64, 56, 48, 40, 32, 24, 16, 8]
+# FILTERS = [64, 32, 28, 24, 20, 16, 12, 8, 4]   
+# FILTERS2 = [128, 64, 56, 48, 40, 32, 24, 16, 8]
+
+FILTERS = [20]   
+FILTERS2 = [40]   
 
 LAYERS = 3
 SEPARABLE_CONV = False

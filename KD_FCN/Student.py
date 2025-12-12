@@ -15,6 +15,7 @@ from tensorflow.keras.metrics import categorical_accuracy
 import re
 from utils.constants import ITERATIONS_STUDENT, EPOCHS, LAYERS, SEPARABLE_CONV
 
+import os
 
 class Distiller(keras.Model):
     def __init__(self, student, teacher):
@@ -104,18 +105,31 @@ class Distiller(keras.Model):
         return results
 
 # Create the student
-def create_Student(x_train, y_train, x_test, y_test, input_shape, nb_classes, output_directory, filters, filters2, alpha, temperature, layers=3, separable_conv=False):
-  recupereTeacherLossAccurayTest2=[]
+def create_Student(dataset_name, x_train, y_train, x_test, y_test, input_shape, nb_classes, output_directory, filters, filters2, alpha, temperature, layers=3, separable_conv=False):
+    recupereTeacherLossAccurayTest2=[]
 
-  teacher_recupere_model = re.sub('results_(.*)Student', 'teacher', output_directory)
-  teacher_recupere_model = re.sub('alpha\d+(\.|)\d*', '', teacher_recupere_model)
-  teacher_recupere_model = re.sub('temperature\d+(\.|)\d*', '', teacher_recupere_model)
+    teacher_folders = ['UCRArchive_2018_itr_0', 'UCRArchive_2018_itr_1', 'UCRArchive_2018_itr_2', 'UCRArchive_2018_itr_3', 'UCRArchive_2018_itr_4']
+    model_accuracies = []
+    for teacher_fld in teacher_folders:
+        base_path = os.path.join(os.getcwd(), 'results', 'teacher', teacher_fld, dataset_name)
+        with open(os.path.join(base_path, "tech.out"), "r") as f:
+            loss, acc = map(float, f.read().split())
+            model_accuracies.append(acc)
+        
+    print('model_accuracies: ', model_accuracies)
+    max_idx  = max(range(len(model_accuracies)), key=model_accuracies.__getitem__)
+    teacher = keras.models.load_model(os.path.join(os.getcwd(), 'results', 'teacher', 'UCRArchive_2018_itr_' + str(max_idx), dataset_name, 'best_model_teacher.keras'))
+    print('max_idx: ', max_idx)
+        
+        
+    #   teacher_recupere_model = re.sub('results_(.*)Student', 'teacher', output_directory)
+    #   teacher_recupere_model = re.sub('alpha\d+(\.|)\d*', '', teacher_recupere_model)
+    #   teacher_recupere_model = re.sub('temperature\d+(\.|)\d*', '', teacher_recupere_model)
 
-  print(teacher_recupere_model)
+    #   print(teacher_recupere_model)
 
-  teacher = keras.models.load_model(f"{teacher_recupere_model}/best_model_teacher.h5")
-  
-  for i in range (ITERATIONS_STUDENT):
+    #   teacher = keras.models.load_model(f"{teacher_recupere_model}/best_model_teacher.h5")
+    
 
     inputs = tf.keras.layers.Input(input_shape)
     if separable_conv:
@@ -150,18 +164,24 @@ def create_Student(x_train, y_train, x_test, y_test, input_shape, nb_classes, ou
     outputs = tf.keras.layers.Dense(nb_classes)(gap)
 
     student = keras.Model(inputs=inputs, outputs=outputs, name="student")
-    
+
     callbacks =[
         keras.callbacks.ModelCheckpoint(
-            f"{output_directory}/best_model_distiller{i}.tf", save_weights_only=True, monitor="student_loss"
-        ),
+        f"{output_directory}/best_model_distiller.weights.h5",
+        save_weights_only=True,
+        monitor="student_loss",
+        # save_best_only=True,
+        mode="min",
+    ),
         keras.callbacks.ReduceLROnPlateau(
-            monitor="student_loss", factor=0.5, patience=50, min_lr=0.0001
+            monitor="student_loss", factor=0.5, patience=50, min_lr=0.0001, mode='min'
         ),
     ]
+    # exit()
 
     # Initialize and compile distiller
     distiller = Distiller(student=student, teacher=teacher)
+    
     distiller.compile(
         optimizer=keras.optimizers.Adam(),
         metrics=[keras.metrics.CategoricalAccuracy()],
@@ -174,19 +194,34 @@ def create_Student(x_train, y_train, x_test, y_test, input_shape, nb_classes, ou
     # Distill teacher to student
     batch_size = 16    
     mini_batch_size = int(min(x_train.shape[0]/10, batch_size))   
-    
-    history2= distiller.fit(x_train, y_train,batch_size=mini_batch_size, epochs=EPOCHS,validation_data=(x_test,y_test),
-          callbacks=callbacks,)
+    distiller.build(input_shape=(None,) + input_shape)
+
+    history2= distiller.fit(x_train, y_train,batch_size=mini_batch_size, epochs=EPOCHS,validation_data=(x_test,y_test), callbacks=callbacks,)
+
     # Evaluate student on test dataset
     resultat = distiller.evaluate(x_test, y_test)
-    recupereTeacherLossAccurayTest2.append(resultat)
-    histo_df = pd.DataFrame(history2.history)
-    hist_csv_file = output_directory +'/historyfold'+str(i)+'.csv'
-    with open(hist_csv_file,mode='w' ) as f:
-      histo_df.to_csv(f)
+    print(f"Evaluation results: {resultat}")  # Debug print to see what we get
+    print(f"Type of resultat: {type(resultat)}")  # Check type
 
-    
-    loss =history2.history['student_loss'] 
-    val_loss =history2.history['val_student_loss']
-    tech=recupereTeacherLossAccurayTest2
-    np.savetxt(output_directory + 'tech.out',tech,delimiter=',')
+    # resultat structure: [loss_tensor, {metrics_dict}, student_loss_tensor]
+    # Extract values from tensors
+    loss_value = resultat[0].numpy() if hasattr(resultat[0], 'numpy') else float(resultat[0])
+    accuracy_dict = resultat[1]
+    accuracy_value = accuracy_dict['categorical_accuracy'].numpy() if hasattr(accuracy_dict['categorical_accuracy'], 'numpy') else float(accuracy_dict['categorical_accuracy'])
+    student_loss_value = resultat[2].numpy() if hasattr(resultat[2], 'numpy') else float(resultat[2])
+
+    # Append the extracted numeric values
+    recupereTeacherLossAccurayTest2.append([loss_value, accuracy_value, student_loss_value])
+        
+    histo_df = pd.DataFrame(history2.history)
+    hist_csv_file = output_directory +'/historyfold.csv'
+    with open(hist_csv_file,mode='w' ) as f:
+        histo_df.to_csv(f)
+
+        
+    loss = history2.history['student_loss'] 
+    val_loss = history2.history['val_student_loss']
+
+    # Convert to numpy array with explicit dtype
+    tech = np.array(recupereTeacherLossAccurayTest2, dtype=np.float64)
+    np.savetxt(output_directory + 'tech.out', tech, delimiter=',')
