@@ -358,10 +358,10 @@ Extend `ALPHA_LIST` and `TEMPERATURE_LIST` in `config.py` — the main loop alre
 
 ---
 
-## License
+<!-- ## License -->
 
-Add your license here (e.g. MIT, Apache-2.0).
-
+<!-- Add your license here (e.g. MIT, Apache-2.0). -->
+<!-- 
 ## Citation
 
 If you use this codebase in academic work, please cite the original architectures:
@@ -369,4 +369,4 @@ If you use this codebase in academic work, please cite the original architecture
 - Hinton et al., *Distilling the Knowledge in a Neural Network*, 2015
 - Ismail Fawaz et al., *InceptionTime: Finding AlexNet for Time Series Classification*, 2020
 - Wang et al., *Time Series Classification from Scratch with Deep Neural Networks: A Strong Baseline* (FCN), 2017
-- Foumani et al., *Improving Position Encoding of Transformers for Multivariate Time Series Classification* (ConvTran), 2023
+- Foumani et al., *Improving Position Encoding of Transformers for Multivariate Time Series Classification* (ConvTran), 2023 -->
