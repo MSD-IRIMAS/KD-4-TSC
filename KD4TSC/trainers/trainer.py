@@ -82,7 +82,7 @@ class Trainer:
         if self.architecture == 'inception':
             self.model = self._build_inception_model(
                 model_type, input_shape, nb_classes, teacher_depth, student_depth,
-                nb_filters, bottleneck_size, kernel_size, teacher_depth, alpha, temperature, device
+                nb_filters, bottleneck_size, kernel_size, teacher_path, alpha, temperature, device
             )
         elif self.architecture == 'fcn':
             self.model = self._build_fcn_model(
@@ -230,7 +230,7 @@ class Trainer:
     def _build_convtran_model(self, model_type, input_shape, teacher_num_heads, student_num_heads, nb_classes, teacher_path, alpha, temperature, device):
         """Build ConvTran model."""
         if model_type == 'teacher':
-            return ConvTran(input_shape, teacher_num_heads, nb_classes)
+            return ConvTran(input_shape, nb_classes, teacher_num_heads)
         
         elif model_type == 'student_alone':
             kwargs = {'num_heads': student_num_heads}

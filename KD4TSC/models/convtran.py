@@ -13,7 +13,7 @@ class Permute(nn.Module):
         return x.permute(1, 0, 2)
     
 class ConvTran(nn.Module):
-    def __init__(self, input_shape, num_heads, num_classes):
+    def __init__(self, input_shape, num_classes, num_heads):
         super().__init__()
         # Parameters Initialization -----------------------------------------------
         print(f"Initializing ConvTran model with input shape {input_shape}, num_heads {num_heads}, num_classes {num_classes}")
